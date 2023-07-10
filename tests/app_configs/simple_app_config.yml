@@ -1,0 +1,23 @@
+name: "Simple config file"
+
+apps:
+
+  - name: foo
+    group: 1
+    builders:
+      - name: echo
+        input: "Test"
+        variant_args:
+          mode:
+            - release
+            - debug
+
+  - name: bar
+    group: 2
+    builders:
+      - name: echo
+        input: "Test"
+        variant_args:
+          mode:
+            - release
+            - debug

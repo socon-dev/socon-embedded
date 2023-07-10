@@ -1,0 +1,46 @@
+[build-system]
+requires = [
+    "setuptools",
+    "setuptools-scm[toml]>=6.2.3"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "socon-embedded"
+description = "Build/Flash tool plugin for socon"
+authors = [
+    {name = "Stephane Capponi", email = "stephane.capponi@proton.me"}
+]
+license = {text = "BSD-3-Clause"}
+requires-python = ">=3.9"
+keywords = [
+    "build",
+    "flasH",
+    "embedded",
+    "socon"
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dynamic = ["version", "readme", "dependencies"]
+
+[project.urls]
+repository = "https://github.com/socon-dev/socon-embedded"
+
+[tool.setuptools.packages.find]
+include = ["socon_embedded*"]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.rst"]}
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools_scm]
+write_to = "socon_embedded/_version.py"
