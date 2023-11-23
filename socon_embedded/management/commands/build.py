@@ -1,11 +1,13 @@
+import os
+
 from argparse import ArgumentParser
 from collections.abc import MutableMapping
-import os
 from typing import Any, Dict, Optional, Tuple
 
 from socon_embedded.utils.loader import from_json_or_yaml, load_from_file
 from socon_embedded.utils.converter import to_text
 from socon_embedded.utils.parser import parse_key_value
+from socon.conf import settings
 
 from socon.core.management.base import CommandError, Config, ProjectCommand
 from socon.core.management.subcommand import Subcommand
@@ -29,7 +31,6 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
             help="The group name of the applications to build",
             action="append",
         )
-        parser.add_argument("--mode", help="The building mode", action="append")
         parser.add_argument(
             "--builder", help="The name of the builder", action="append"
         )
@@ -90,10 +91,9 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
 
         # Merge the extras filters with the default one passed on the command line
         filters_opt = self._create_filter(
-            ("name__in", config.getoption("name")),
+            ("name__in", config.getoption("app")),
             ("group__in", config.getoption("group")),
-            ("builders__name__in", config.getoption("builder")),
-            ("builders__mode__in", config.getoption("mode")),
+            ("builders__name__in", config.getoption("builder"))
         )
         filters = filters | filters_opt
 
@@ -109,7 +109,9 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
         wae = config.getoption("wae")
 
         # Get the output directory if any
-        artifact_dir = config.getoption("artifact_dir")
+        artifact_dir = config.getoption("artifact_dir") or getattr(
+            settings, "BUILD_ARTIFACT_PATH"
+        )
 
         # Load every variable that needs to be export in the project config
         env_variables = project_config.get_setting(

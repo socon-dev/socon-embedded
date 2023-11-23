@@ -14,7 +14,6 @@ from socon_embedded.schema.tasks.task import Task
 from socon.core.registry import projects
 from socon.core.registry.config import ProjectConfig
 from socon.utils.terminal import terminal
-from socon.conf import settings
 
 from junitparser import JUnitXml, TestCase, TestSuite, Failure, Skipped
 
@@ -74,8 +73,13 @@ class AppRegistryExecutor(Executor):
         """Build the application in each registries based on the given filters"""
         self._clear_cache()
 
+        # Re-define output_dir if not given
+        output_dir = self._get_output_dir(output_dir)
+
         # Create a build section
-        terminal.sep("-", f"Application registry: {self._app_registry.name}", newline="before")
+        terminal.sep(
+            "-", f"Application registry: {self._app_registry.name}", newline="both"
+        )
 
         # Filter the application and return a AppRegistry with only the application
         # that we want to build
@@ -135,10 +139,14 @@ class AppRegistryExecutor(Executor):
                 if result.is_fail and exit_on_error is True:
                     stop_building = True
 
+    def _get_output_dir(self, output_dir: str = None) -> str:
+        output_dir = output_dir if output_dir else os.getcwd()
+        return Path(output_dir, self._app_registry.name)
+
     def _create_artifact_directory(
         self,
         build_info: BuildInfo,
-        output_dir: str = None,
+        output_dir: str,
         clean: bool = False
     ):
         """
@@ -146,9 +154,8 @@ class AppRegistryExecutor(Executor):
         inside the specified output directory.
         If clean = True, the directory will be cleaned
         """
-        output_dir = output_dir if output_dir else os.getcwd()
         artifact_path = list(filter(None, [
-            output_dir, self._app_registry.name, build_info.builder, build_info.app,
+            output_dir, build_info.builder, build_info.app,
             "_".join(sorted(build_info.variant_args.values()))
         ]))
         artifact_path = Path().joinpath(*artifact_path)
@@ -171,8 +178,7 @@ class AppRegistryExecutor(Executor):
         add_skipped_apps: bool = True
     ) -> None:
         """Create junit report from buidled and skipped apps"""
-        output_dir = output_dir if output_dir else getattr(
-            settings, "ARTIFACT_PATH", default=os.getcwd())
+        output_dir = self._get_output_dir(output_dir)
         junit_file = Path(output_dir) / output_file
 
         # Create the Junit object
@@ -191,15 +197,18 @@ class AppRegistryExecutor(Executor):
 
             # Assign a Failure or Skipped result to the testcase
             if result.is_fail:
-                testcase.result = Failure(result.result.text)
+                testcase.result = [Failure(result.result.text)]
             elif result.is_skipped:
-                testcase.result = Skipped(result.result.text)
+                testcase.result = [Skipped(result.result.text)]
 
             # Do not add testcase that are skipped if add_skipped_apps is False
             if result.is_skipped and add_skipped_apps is False:
                 continue
 
             testsuite.add_testcase(testcase)
+
+        # Add the testsuite to the junit collection
+        junit.add_testsuite(testsuite)
 
         # Create the report
         junit.write(str(junit_file), pretty=True)

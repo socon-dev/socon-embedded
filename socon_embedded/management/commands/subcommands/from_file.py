@@ -52,3 +52,6 @@ class BuildFromFile(BuildCommandInterface):
             warning_as_error=warning_as_error,
             output_dir=artifact_dir
         )
+
+        # Make a report at the root of the artifact directory
+        regexec.create_report("results.xml", artifact_dir)
