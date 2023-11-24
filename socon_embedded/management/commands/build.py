@@ -55,6 +55,15 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
             action="append",
         )
         parser.add_argument(
+            "--variant-args",
+            help=(
+                "Filter a build variant args configiration. "
+                "Like a mode variant configuration. "
+                'Example: --variant-args "mode=release"'
+            ),
+            action="append"
+        )
+        parser.add_argument(
             "--extras-vars",
             help=(
                 "Set variables as key=value or YAML/JSON, if filename prepend with @. "
@@ -88,6 +97,7 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
         filters = self.load_template_args(config.getoption("filter", []))
         excludes = self.load_template_args(config.getoption("excludes", []))
         extras_vars = self.load_template_args(config.getoption("extras_vars", []))
+        variant_args = self.load_template_args(config.getoption("variant_args", []))
 
         # Merge the extras filters with the default one passed on the command line
         filters_opt = self._create_filter(
@@ -96,6 +106,13 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
             ("builders__name__in", config.getoption("builder"))
         )
         filters = filters | filters_opt
+
+        # Create the variant config filter
+        variant_args_filters = {}
+        for var_config, value in variant_args.items():
+            variant_args_filters.update(
+                {f"variant_args__{var_config}": value}
+            )
 
         # Create a context based on the extras vars and the base directory. This
         # will be mainly use to resolve any further jinja template file
@@ -129,6 +146,7 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
             project_config=project_config,
             filters=filters,
             excludes=excludes,
+            variant_args_filters=variant_args_filters,
             exit_on_error=eoe,
             context=context,
             warning_as_error=wae,
@@ -141,6 +159,7 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
         project_config: ProjectConfig,
         filters: dict = {},
         excludes: dict = {},
+        variant_args_filters: dict = {},
         context: dict = {},
         exit_on_error: bool = False,
         warning_as_error: bool = False,

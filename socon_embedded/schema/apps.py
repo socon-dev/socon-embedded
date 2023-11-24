@@ -110,7 +110,11 @@ class AppConfig(Base, Nameable, Taskable):
         return self
 
     @staticmethod
-    def _get_build_configs(app: str, builder: AppBuilder) -> list[BuildConfig]:
+    def _get_build_configs(
+        app: str,
+        builder: AppBuilder,
+        filters: dict = {}
+    ) -> list[BuildConfig]:
         build_configs = []
 
         # If the user specified the configs entry, we need to create
@@ -121,13 +125,14 @@ class AppConfig(Base, Nameable, Taskable):
                 dict(zip(keys, v)) for v in itertools.product(*values)
             ]
             for variant in permutations_dicts:
-                # Create a new builder
                 config_builder = AppBuilder(
                     **builder.model_dump(exclude="variant_args"), variant_args=variant
                 )
-                build_configs.append(
-                    BuildConfig(app=app, builder=config_builder)
-                )
+                app_dataset = Dataset(config_builder.model_dump())
+                if len(app_dataset.filter(**filters)) != 0:
+                    build_configs.append(
+                        BuildConfig(app=app, builder=config_builder)
+                    )
         else:
             build_configs.append(
                 BuildConfig(app=app, builder=builder)
@@ -135,7 +140,7 @@ class AppConfig(Base, Nameable, Taskable):
 
         return build_configs
 
-    def get_build_configs(self) -> List[BuildConfig]:
+    def get_build_configs(self, filters: dict = {}) -> List[BuildConfig]:
         build_configs = []
         builders_ref: Dict[str, AppBuilder] = {}
 
@@ -146,7 +151,9 @@ class AppConfig(Base, Nameable, Taskable):
 
             # If the user specified the configs entry, we need to create
             # multiple build configuration
-            build_configs.extend(self._get_build_configs(self.name, builder))
+            build_configs.extend(
+                self._get_build_configs(self.name, builder, filters)
+            )
 
         for variant in self.variants:
             app = self.name + f".{variant.name}"
@@ -155,7 +162,7 @@ class AppConfig(Base, Nameable, Taskable):
                     builder_ref = builders_ref[ref]
                     builder = builder_ref.merge_variant_builder(vbuilder)
                     build_configs.extend(
-                        self._get_build_configs(app, builder)
+                        self._get_build_configs(app, builder, filters)
                     )
 
         return build_configs

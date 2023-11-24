@@ -27,6 +27,7 @@ class BuildFromFile(BuildCommandInterface):
         project_config: ProjectConfig,
         filters: dict = {},
         excludes: dict = {},
+        variant_args_filters: dict = {},
         context: dict = {},
         exit_on_error: bool = False,
         warning_as_error: bool = False,
@@ -48,6 +49,7 @@ class BuildFromFile(BuildCommandInterface):
         regexec.build(
             filters=filters,
             excludes=excludes,
+            variant_args_filters=variant_args_filters,
             exit_on_error=exit_on_error,
             warning_as_error=warning_as_error,
             output_dir=artifact_dir

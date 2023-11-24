@@ -66,6 +66,7 @@ class AppRegistryExecutor(Executor):
         self,
         filters: Dict[str, Any] = {},
         excludes: Dict[str, Any] = {},
+        variant_args_filters: Dict[str, Any] = {},
         output_dir: Union[str, os.PathLike] = None,
         exit_on_error: bool = False,
         warning_as_error: bool = False,
@@ -101,7 +102,7 @@ class AppRegistryExecutor(Executor):
         for app_config in reg.apps:
 
             # Get all build configuration for each application
-            build_configs = app_config.get_build_configs()
+            build_configs = app_config.get_build_configs(variant_args_filters)
 
             for build_config in build_configs:
 
