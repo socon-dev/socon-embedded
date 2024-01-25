@@ -1,6 +1,6 @@
 PyYAML==6.0
 Jinja2==3.1.2
 datalookup==1.0.0
-pydantic==2.1.1
+pydantic==2.5.3
 socon==0.2.1
 junitparser==3.1.0
