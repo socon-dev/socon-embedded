@@ -1,0 +1,5 @@
+name: "Task with wrong action args"
+copy:
+  wrong_args: "xx"
+  dest: "xx"
+

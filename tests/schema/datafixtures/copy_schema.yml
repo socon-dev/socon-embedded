@@ -1,0 +1,5 @@
+name: "Name of my task"
+copy:
+  src: "a"
+  dest: "b"
+

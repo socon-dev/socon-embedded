@@ -61,7 +61,7 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
                 "Like a mode variant configuration. "
                 'Example: --variant-args "mode=release"'
             ),
-            action="append"
+            action="append",
         )
         parser.add_argument(
             "--extras-vars",
@@ -81,10 +81,8 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
             "--wae", "--warning-as-error", help="Treat a warning as an error"
         )
         parser.add_argument(
-            "--artifact-dir", help=(
-                "Path to the artifact folder that will store "
-                "the build artifacts"
-            )
+            "--artifact-dir",
+            help=("Path to the artifact folder that will store " "the build artifacts"),
         )
         self.add_build_arguments(parser)
 
@@ -103,16 +101,14 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
         filters_opt = self._create_filter(
             ("name__in", config.getoption("app")),
             ("group__in", config.getoption("group")),
-            ("builders__name__in", config.getoption("builder"))
+            ("builders__name__in", config.getoption("builder")),
         )
         filters = filters | filters_opt
 
         # Create the variant config filter
         variant_args_filters = {}
         for var_config, value in variant_args.items():
-            variant_args_filters.update(
-                {f"variant_args__{var_config}": value}
-            )
+            variant_args_filters.update({f"variant_args__{var_config}": value})
 
         # Create a context based on the extras vars and the base directory. This
         # will be mainly use to resolve any further jinja template file
@@ -150,7 +146,7 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
             exit_on_error=eoe,
             context=context,
             warning_as_error=wae,
-            artifact_dir=artifact_dir
+            artifact_dir=artifact_dir,
         )
 
     def handle_build(
@@ -163,7 +159,7 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
         context: dict = {},
         exit_on_error: bool = False,
         warning_as_error: bool = False,
-        artifact_dir: str = None
+        artifact_dir: str = None,
     ) -> str:
         raise NotImplementedError(
             "Subclass of '{}' must implement handle_build(...) method".format(
@@ -172,11 +168,11 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
         )
 
     @staticmethod
-    def load_template_args(vars: list[Any] = tuple()) -> Dict[str, str]:
+    def load_template_args(variables: list[Any] = tuple()) -> Dict[str, str]:
         """Load vars passed in command line arguments"""
         loaded_vars = {}
 
-        for var_opt in vars:
+        for var_opt in variables:
             data = None
             var_opt = to_text(var_opt)
             if var_opt is None or not var_opt:

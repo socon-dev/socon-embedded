@@ -1,0 +1,7 @@
+name: "Multiple valid action"
+copy:
+  src: ""
+  dest: ""
+move:
+  src: ""
+  dest: ""

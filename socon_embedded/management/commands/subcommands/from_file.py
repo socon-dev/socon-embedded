@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-from socon_embedded.apps.executor import AppRegistryExecutor
+from socon_embedded.executor.app_executor import AppRegistryExecutor
 from socon_embedded.management.commands.build import BuildCommandInterface
 
 from socon.core.management.base import Config
@@ -42,7 +42,7 @@ class BuildFromFile(BuildCommandInterface):
             app_registry,
             context=context,
             project_config=project_config,
-            builder_manager=get_builder_manager()
+            builder_manager=get_builder_manager(),
         )
 
         # Build the application using the selected registry
@@ -52,7 +52,7 @@ class BuildFromFile(BuildCommandInterface):
             variant_args_filters=variant_args_filters,
             exit_on_error=exit_on_error,
             warning_as_error=warning_as_error,
-            output_dir=artifact_dir
+            output_dir=artifact_dir,
         )
 
         # Make a report at the root of the artifact directory

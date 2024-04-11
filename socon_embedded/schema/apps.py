@@ -6,7 +6,7 @@ from socon_embedded.builder import BuildInfo
 
 from socon_embedded.exceptions import YamlFormatError, YamlParserError
 from socon_embedded.managers import get_builder_manager
-from socon_embedded.schema.tasks.task import Taskable
+from socon_embedded.schema.task import Taskable
 from socon_embedded.schema.base import Base, Nameable, get_field_names
 
 from pydantic import BaseModel, field_validator, model_validator
@@ -40,10 +40,7 @@ class AppRegistry(Base, Nameable, Taskable):
             filtered_apps.append(AppConfig(**app.values()))
 
         # Return a new registry with the filtered apps
-        return AppRegistry(
-            **self.model_dump(exclude="apps"),
-            apps=filtered_apps
-        )
+        return AppRegistry(**self.model_dump(exclude="apps"), apps=filtered_apps)
 
     def _get_app(self, name: str) -> Optional[AppConfig]:
         """Get an application from the registry"""
@@ -90,8 +87,7 @@ class AppConfig(Base, Nameable, Taskable):
 
         if not_existing_builders:
             raise YamlParserError(
-                "Following builder(s) does not exist(s):\n"
-                f"{not_existing_builders}"
+                "Following builder(s) does not exist(s):\n" f"{not_existing_builders}"
             )
 
         return self
@@ -111,9 +107,7 @@ class AppConfig(Base, Nameable, Taskable):
 
     @staticmethod
     def _get_build_configs(
-        app: str,
-        builder: AppBuilder,
-        filters: dict = {}
+        app: str, builder: AppBuilder, filters: dict = {}
     ) -> list[BuildConfig]:
         build_configs = []
 
@@ -130,13 +124,9 @@ class AppConfig(Base, Nameable, Taskable):
                 )
                 app_dataset = Dataset(config_builder.model_dump())
                 if len(app_dataset.filter(**filters)) != 0:
-                    build_configs.append(
-                        BuildConfig(app=app, builder=config_builder)
-                    )
+                    build_configs.append(BuildConfig(app=app, builder=config_builder))
         else:
-            build_configs.append(
-                BuildConfig(app=app, builder=builder)
-            )
+            build_configs.append(BuildConfig(app=app, builder=builder))
 
         return build_configs
 
@@ -151,9 +141,7 @@ class AppConfig(Base, Nameable, Taskable):
 
             # If the user specified the configs entry, we need to create
             # multiple build configuration
-            build_configs.extend(
-                self._get_build_configs(self.name, builder, filters)
-            )
+            build_configs.extend(self._get_build_configs(self.name, builder, filters))
 
         for variant in self.variants:
             app = self.name + f".{variant.name}"
@@ -161,9 +149,7 @@ class AppConfig(Base, Nameable, Taskable):
                 for ref in vbuilder.ref:
                     builder_ref = builders_ref[ref]
                     builder = builder_ref.merge_variant_builder(vbuilder)
-                    build_configs.extend(
-                        self._get_build_configs(app, builder, filters)
-                    )
+                    build_configs.extend(self._get_build_configs(app, builder, filters))
 
         return build_configs
 
@@ -200,20 +186,14 @@ class BuildConfig(Base, Taskable):
             "app": self.app,
             **self.builder.model_dump(
                 by_alias=True,
-                exclude=[
-                    *get_field_names(Taskable),
-                    *get_field_names(Nameable)
-                ]
-            )
+                exclude=[*get_field_names(Taskable), *get_field_names(Nameable)],
+            ),
         }
 
     def create_buildinfo(self) -> BuildInfo:
         build_info = self.get_buildinfo()
         build_info.pop("raw_args")
-        return BuildInfo(
-            builder=self.builder.name,
-            **build_info
-        )
+        return BuildInfo(builder=self.builder.name, **build_info)
 
 
 class Builder(Taskable):
@@ -234,10 +214,7 @@ class AppBuilder(Base, Builder, Nameable):
 
         # Merge all remaining fields
         builder_dict = builder.model_dump() | other.model_dump(
-            exclude=[
-                *get_field_names(Taskable),
-                *get_field_names(VariantBuilderField)
-            ]
+            exclude=[*get_field_names(Taskable), *get_field_names(VariantBuilderField)]
         )
 
         return AppBuilder(**builder_dict)

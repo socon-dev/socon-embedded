@@ -1,0 +1,28 @@
+name: "Simple config file with tasks"
+tasks:
+  - name: "Simple copy tasks"
+    copy:
+      src: "xx"
+      dest: "xx"
+
+apps:
+
+  - name: foo
+    group: 1
+    builders:
+      - name: echo
+        project_file: "Test"
+        variant_args:
+          mode:
+            - release
+            - debug
+
+  - name: bar
+    group: 2
+    builders:
+      - name: echo
+        project_file: "Test"
+        variant_args:
+          mode:
+            - release
+            - debug

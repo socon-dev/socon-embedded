@@ -8,12 +8,8 @@ def pytest_configure(config):
 
     settings.configure(
         default_settings=global_settings,
-        INSTALLED_PLUGINS=(
-            "socon_embedded",
-        ),
-        INSTALLED_PROJECTS=(
-            'tests',
-        ),
+        INSTALLED_PLUGINS=("socon_embedded",),
+        INSTALLED_PROJECTS=("projects.test_project",),
     )
 
     socon.setup()

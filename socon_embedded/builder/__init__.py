@@ -40,6 +40,7 @@ class BuildCommandNotFound(Exception):
 @dataclass
 class BuildInfo:
     """Store building information"""
+
     app: str
     builder: str
     project_file: str
@@ -50,7 +51,7 @@ class BuildInfo:
         output = [
             f"Application: {self.app}",
             f"Input file: {self.project_file}",
-            f"Builder: {self.builder}"
+            f"Builder: {self.builder}",
         ]
         variant_args = self.variant_args
         if variant_args:
@@ -60,11 +61,7 @@ class BuildInfo:
 
     def get_case_name(self) -> str:
         """Get the testcase name that will be used in the junit report"""
-        return " - ".join([
-            self.app,
-            self.builder,
-            *self.variant_args.values()
-        ])
+        return " - ".join([self.app, self.builder, *self.variant_args.values()])
 
 
 class Builder(Hook, abstract=True):
@@ -81,7 +78,7 @@ class Builder(Hook, abstract=True):
     def __init__(
         self,
         name: Optional[str] = None,
-        executable: Optional[Union[str, os.PathLike]] = None
+        executable: Optional[Union[str, os.PathLike]] = None,
     ) -> None:
         self.name = name or getattr(self, "name", self.__class__.__name__)
         self.executable = executable or self.get_executable()
@@ -107,7 +104,7 @@ class Builder(Hook, abstract=True):
         warning_as_error: bool = False,
         output_file: Union[str, os.PathLike] = None,
         clean: bool = False,
-        vars: dict = {},
+        variables: dict = {},
         **kwargs: Any,
     ) -> BuildResult:
         """
@@ -149,12 +146,12 @@ class Builder(Hook, abstract=True):
             builder=self.name,
             project_file=project_file,
             cmdline=cmdline,
-            variant_args=variant_args
+            variant_args=variant_args,
         )
         self.display_build_info(buildinfo)
 
         # Run pre_build method if required
-        self.pre_build(buildinfo, **vars)
+        self.pre_build(buildinfo, **variables)
 
         # Get an approximation build time execution
         time_started = time.time()
@@ -164,9 +161,7 @@ class Builder(Hook, abstract=True):
         try:
             status_code, output = self.execute(cmdline, **kwargs)
         except BuildCommandNotFound as e:
-            build_result = BuildResult(
-                Result(Status.FAILURE, str(e)), str(e)
-            )
+            build_result = BuildResult(Result(Status.FAILURE, str(e)), str(e))
         else:
             # Get the execution time of the build
             execution_time = time.time() - time_started
@@ -184,12 +179,12 @@ class Builder(Hook, abstract=True):
 
         # Save the log into the artifact path
         if output_file:
-            with open(output_file, 'w+') as f:
+            with open(output_file, "w+") as f:
                 f.write(build_result.output)
 
         # call the post_build method
         output_dir = Path(output_file).parent
-        self.post_build(build_result, output_dir, **vars)
+        self.post_build(build_result, output_dir, **variables)
 
         return build_result
 
@@ -201,8 +196,7 @@ class Builder(Hook, abstract=True):
         pass
 
     def execute(
-        self, commands: list[str],
-        **subprocess_args: Any
+        self, commands: list[str], **subprocess_args: Any
     ) -> Tuple[int, Union[str, bytes], str]:
         return self._execute(commands, **subprocess_args)
 
@@ -216,11 +210,11 @@ class Builder(Hook, abstract=True):
             terminal.line(build_result.result.message)
         terminal.line(f"Result: {status_msg}\n", fg=color)
 
-    def pre_build(self, build_info: BuildInfo, **vars):
+    def pre_build(self, build_info: BuildInfo, **variables):
         """Method executed just before the build execution"""
         pass
 
-    def post_build(self, result: BuildResult, **vars):
+    def post_build(self, result: BuildResult, output_dir: str, **variables):
         """Method executed after the build execution"""
         pass
 
@@ -270,7 +264,7 @@ class Builder(Hook, abstract=True):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
-                **subprocess_kwargs
+                **subprocess_kwargs,
             )
 
             if silent is True:

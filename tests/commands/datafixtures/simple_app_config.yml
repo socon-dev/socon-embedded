@@ -6,7 +6,7 @@ apps:
     group: 1
     builders:
       - name: echo
-        input: "Test"
+        project_file: "Test"
         variant_args:
           mode:
             - release
@@ -16,7 +16,7 @@ apps:
     group: 2
     builders:
       - name: echo
-        input: "Test"
+        project_file: "Test"
         variant_args:
           mode:
             - release
