@@ -47,7 +47,7 @@ class TaskPlayer:
             executor.cleanup()
 
     def _task_on_start(self, task: Task):
-        if self._terminal._current_line not in ["", "\n", "\r"]:
+        if self._terminal._current_line != "":
             self._terminal.line()
         self._terminal.line(f"TASK [{task.name}]")
         self._terminal.sep("*")

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Literal, Optional, Type
+from typing import List, Literal, Optional, Type, Any
 
 from socon.core.registry import projects
 
@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field, model_validator
 class Task(Base, Nameable):
     """Call a module (action) with specific arguments and other parameters"""
 
-    action: Type
+    action: Any
     args: dict = {}
 
     retries: Optional[int] = 0
@@ -31,6 +31,12 @@ class Task(Base, Nameable):
         if "args" in values:
             args = values["args"]
 
+        # If the application registry filters some of the apps,
+        # the validation will need to be retriggered and the action
+        # will already be an instance. To avoid that, we check if we already have an action instance and return it as his.
+        if isinstance(action, object) and action is not None:
+            return values
+
         # filter out task attributes so we're only querying unrecognized keys as actions/modules
         non_task_values = dict(
             (k, v) for k, v in values.items() if (k not in get_field_names(Task))
@@ -44,7 +50,6 @@ class Task(Base, Nameable):
                 is_action_candidate = True
 
             if is_action_candidate:
-
                 # finding more than one module name is a problem
                 if action is not None:
                     raise ParserError(
@@ -82,7 +87,8 @@ class Task(Base, Nameable):
     @model_validator(mode="after")
     def post_process_action(self):
         """Validate the action schema"""
-        self.action = self.action(self)
+        if isinstance(self.action, type):
+            self.action = self.action(self)
         return self
 
 
