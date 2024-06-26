@@ -93,7 +93,7 @@ class BuildCommandInterface(ProjectCommand, abstract=True):
     def handle(self, config: Config, project_config: ProjectConfig) -> str:
         # Transform each of the following command line args as a dictionary
         filters = self.load_template_args(config.getoption("filter", []))
-        excludes = self.load_template_args(config.getoption("excludes", []))
+        excludes = self.load_template_args(config.getoption("exclude", []))
         extras_vars = self.load_template_args(config.getoption("extras_vars", []))
         variant_args = self.load_template_args(config.getoption("variant_args", []))
 
